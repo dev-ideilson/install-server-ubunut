@@ -187,7 +187,7 @@ ufw allow 443/tcp comment 'HTTPS' || print_error "Falha ao permitir porta HTTPS.
 if [[ "$INSTALL_VSFTPD" == "yes" ]]; then
     ufw allow 20/tcp comment 'FTP Data' || print_error "Falha ao permitir porta FTP Data."
     ufw allow 21/tcp comment 'FTP Control' || print_error "Falha ao permitir porta FTP Control."
-    ufw allow 40000:40000/tcp comment 'FTP Passive Ports' || print_error "Falha ao permitir portas passivas FTP."
+    ufw allow 40000/tcp comment 'FTP Passive Ports' || print_error "Falha ao permitir portas passivas FTP."
 fi
 if [[ "$INSTALL_POSTGRESQL" == "yes" ]]; then
     ufw allow 5432/tcp comment 'PostgreSQL' || print_error "Falha ao permitir porta PostgreSQL."
