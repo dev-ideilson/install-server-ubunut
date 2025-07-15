@@ -38,21 +38,22 @@ print_info "Solicitando informações para a configuração do servidor..."
 
 # Opção de usuário do sistema
 CREATE_NEW_USER="no"
-read -p "Deseja criar um NOVO usuário do sistema? (s/n) [s]: " CREATE_NEW_USER_CHOICE
+# Redireciona a entrada do read para /dev/tty para garantir que leia do terminal
+read -p "Deseja criar um NOVO usuário do sistema? (s/n) [s]: " CREATE_NEW_USER_CHOICE < /dev/tty
 CREATE_NEW_USER_CHOICE=${CREATE_NEW_USER_CHOICE:-s} # Default to 's'
 if [[ "$CREATE_NEW_USER_CHOICE" =~ ^[Ss]$ ]]; then
     CREATE_NEW_USER="yes"
-    read -p "Digite o nome de usuário do sistema a ser criado (ex: django_user): " USERNAME
+    read -p "Digite o nome de usuário do sistema a ser criado (ex: django_user): " USERNAME < /dev/tty
     if [[ -z "$USERNAME" ]]; then
         print_error "Nome de usuário não pode ser vazio."
     fi
-    read -s -p "Digite a senha para o usuário '$USERNAME': " PASSWORD
+    read -s -p "Digite a senha para o usuário '$USERNAME': " PASSWORD < /dev/tty
     echo # Adiciona uma nova linha após a entrada da senha silenciosa
     if [[ -z "$PASSWORD" ]]; then
         print_error "Senha não pode ser vazia."
     fi
 else
-    read -p "Digite o nome de usuário do sistema EXISTENTE a ser usado (ex: seu_usuario): " USERNAME
+    read -p "Digite o nome de usuário do sistema EXISTENTE a ser usado (ex: seu_usuario): " USERNAME < /dev/tty
     if [[ -z "$USERNAME" ]]; then
         print_error "Nome de usuário existente não pode ser vazio."
     fi
@@ -62,12 +63,12 @@ else
     print_warning "Usando o usuário existente: '$USERNAME'. Certifique-se de que ele tenha as permissões necessárias."
 fi
 
-read -p "Digite o nome do seu projeto (ex: meuprojeto): " DJANGO_PROJECT_NAME
+read -p "Digite o nome do seu projeto (ex: meuprojeto): " DJANGO_PROJECT_NAME < /dev/tty
 if [[ -z "$DJANGO_PROJECT_NAME" ]]; then
     print_error "Nome do projeto não pode ser vazio."
 fi
 
-read -p "Digite o caminho de instalação base (ex: /opt, /var/www): " BASE_INSTALL_PATH
+read -p "Digite o caminho de instalação base (ex: /opt, /var/www): " BASE_INSTALL_PATH < /dev/tty
 if [[ -z "$BASE_INSTALL_PATH" ]]; then
     print_error "Caminho de instalação base não pode ser vazio."
 fi
@@ -76,32 +77,32 @@ PROJECT_PATH="$BASE_INSTALL_PATH/$DJANGO_PROJECT_NAME"
 
 # Opções de serviços
 INSTALL_NGINX="no"
-read -p "Deseja instalar e configurar Nginx? (s/n) [s]: " INSTALL_NGINX_CHOICE
+read -p "Deseja instalar e configurar Nginx? (s/n) [s]: " INSTALL_NGINX_CHOICE < /dev/tty
 INSTALL_NGINX_CHOICE=${INSTALL_NGINX_CHOICE:-s}
 if [[ "$INSTALL_NGINX_CHOICE" =~ ^[Ss]$ ]]; then INSTALL_NGINX="yes"; fi
 
 INSTALL_VSFTPD="no"
-read -p "Deseja instalar e configurar VSFTPD (FTP seguro)? (s/n) [s]: " INSTALL_VSFTPD_CHOICE
+read -p "Deseja instalar e configurar VSFTPD (FTP seguro)? (s/n) [s]: " INSTALL_VSFTPD_CHOICE < /dev/tty
 INSTALL_VSFTPD_CHOICE=${INSTALL_VSFTPD_CHOICE:-s}
 if [[ "$INSTALL_VSFTPD_CHOICE" =~ ^[Ss]$ ]]; then INSTALL_VSFTPD="yes"; fi
 
 INSTALL_POSTGRESQL="no"
-read -p "Deseja instalar e configurar PostgreSQL? (s/n) [s]: " INSTALL_POSTGRESQL_CHOICE
+read -p "Deseja instalar e configurar PostgreSQL? (s/n) [s]: " INSTALL_POSTGRESQL_CHOICE < /dev/tty
 INSTALL_POSTGRESQL_CHOICE=${INSTALL_POSTGRESQL_CHOICE:-s}
 if [[ "$INSTALL_POSTGRESQL_CHOICE" =~ ^[Ss]$ ]]; then INSTALL_POSTGRESQL="yes"; fi
 
 INSTALL_MARIADB="no"
-read -p "Deseja instalar e configurar MariaDB? (s/n) [n]: " INSTALL_MARIADB_CHOICE
+read -p "Deseja instalar e configurar MariaDB? (s/n) [n]: " INSTALL_MARIADB_CHOICE < /dev/tty
 INSTALL_MARIADB_CHOICE=${INSTALL_MARIADB_CHOICE:-n}
 if [[ "$INSTALL_MARIADB_CHOICE" =~ ^[Ss]$ ]]; then INSTALL_MARIADB="yes"; fi
 
 INSTALL_REDIS="no"
-read -p "Deseja instalar e configurar Redis? (s/n) [s]: " INSTALL_REDIS_CHOICE
+read -p "Deseja instalar e configurar Redis? (s/n) [s]: " INSTALL_REDIS_CHOICE < /dev/tty
 INSTALL_REDIS_CHOICE=${INSTALL_REDIS_CHOICE:-s}
 if [[ "$INSTALL_REDIS_CHOICE" =~ ^[Ss]$ ]]; then INSTALL_REDIS="yes"; fi
 
 INSTALL_CELERY="no"
-read -p "Deseja instalar e configurar Celery? (s/n) [s]: " INSTALL_CELERY_CHOICE
+read -p "Deseja instalar e configurar Celery? (s/n) [s]: " INSTALL_CELERY_CHOICE < /dev/tty
 INSTALL_CELERY_CHOICE=${INSTALL_CELERY_CHOICE:-s}
 if [[ "$INSTALL_CELERY_CHOICE" =~ ^[Ss]$ ]]; then INSTALL_CELERY="yes"; fi
 
@@ -187,7 +188,7 @@ ufw allow 443/tcp comment 'HTTPS' || print_error "Falha ao permitir porta HTTPS.
 if [[ "$INSTALL_VSFTPD" == "yes" ]]; then
     ufw allow 20/tcp comment 'FTP Data' || print_error "Falha ao permitir porta FTP Data."
     ufw allow 21/tcp comment 'FTP Control' || print_error "Falha ao permitir porta FTP Control."
-    ufw allow 40000/tcp comment 'FTP Passive Ports' || print_error "Falha ao permitir portas passivas FTP."
+    ufw allow 40000/tcp comment 'FTP Passive Port' || print_error "Falha ao permitir porta passiva FTP."
 fi
 if [[ "$INSTALL_POSTGRESQL" == "yes" ]]; then
     ufw allow 5432/tcp comment 'PostgreSQL' || print_error "Falha ao permitir porta PostgreSQL."
@@ -259,11 +260,11 @@ fi
 if [[ "$INSTALL_POSTGRESQL" == "yes" ]]; then
     print_info "Configurando PostgreSQL..."
     CREATE_DB_USER="no"
-    read -p "Deseja criar um USUÁRIO de banco de dados PostgreSQL para '$USERNAME'? (s/n) [s]: " CREATE_DB_USER_CHOICE
+    read -p "Deseja criar um USUÁRIO de banco de dados PostgreSQL para '$USERNAME'? (s/n) [s]: " CREATE_DB_USER_CHOICE < /dev/tty
     CREATE_DB_USER_CHOICE=${CREATE_DB_USER_CHOICE:-s}
     if [[ "$CREATE_DB_USER_CHOICE" =~ ^[Ss]$ ]]; then
         CREATE_DB_USER="yes"
-        read -s -p "Digite a senha para o usuário PostgreSQL '$USERNAME': " PG_PASSWORD
+        read -s -p "Digite a senha para o usuário PostgreSQL '$USERNAME': " PG_PASSWORD < /dev/tty
         echo
         if [[ -z "$PG_PASSWORD" ]]; then
             print_error "Senha do PostgreSQL não pode ser vazia."
@@ -274,7 +275,7 @@ if [[ "$INSTALL_POSTGRESQL" == "yes" ]]; then
         print_success "Usuário PostgreSQL '$USERNAME' criado."
 
         CREATE_DB="no"
-        read -p "Deseja criar um BANCO DE DADOS PostgreSQL '$DJANGO_PROJECT_NAME' para '$USERNAME'? (s/n) [s]: " CREATE_DB_CHOICE
+        read -p "Deseja criar um BANCO DE DADOS PostgreSQL '$DJANGO_PROJECT_NAME' para '$USERNAME'? (s/n) [s]: " CREATE_DB_CHOICE < /dev/tty
         CREATE_DB_CHOICE=${CREATE_DB_CHOICE:-s}
         if [[ "$CREATE_DB_CHOICE" =~ ^[Ss]$ ]]; then
             CREATE_DB="yes"
@@ -293,18 +294,18 @@ if [[ "$INSTALL_MARIADB" == "yes" ]]; then
     print_warning "Recomenda-se executar 'sudo mysql_secure_installation' manualmente para MariaDB."
 
     CREATE_DB_USER_MARIADB="no"
-    read -p "Deseja criar um USUÁRIO de banco de dados MariaDB para '$USERNAME'? (s/n) [s]: " CREATE_DB_USER_MARIADB_CHOICE
+    read -p "Deseja criar um USUÁRIO de banco de dados MariaDB para '$USERNAME'? (s/n) [s]: " CREATE_DB_USER_MARIADB_CHOICE < /dev/tty
     CREATE_DB_USER_MARIADB_CHOICE=${CREATE_DB_USER_MARIADB_CHOICE:-s}
     if [[ "$CREATE_DB_USER_MARIADB_CHOICE" =~ ^[Ss]$ ]]; then
         CREATE_DB_USER_MARIADB="yes"
-        read -s -p "Digite a senha para o usuário MariaDB '$USERNAME': " DB_PASSWORD_MARIADB
+        read -s -p "Digite a senha para o usuário MariaDB '$USERNAME': " DB_PASSWORD_MARIADB < /dev/tty
         echo
         if [[ -z "$DB_PASSWORD_MARIADB" ]]; then
             print_error "Senha do MariaDB não pode ser vazia."
         fi
 
         DB_HOST_ACCESS="localhost"
-        read -p "O usuário MariaDB '$USERNAME' terá acesso de qual host? (localhost ou %) [localhost]: " DB_HOST_ACCESS_CHOICE
+        read -p "O usuário MariaDB '$USERNAME' terá acesso de qual host? (localhost ou %) [localhost]: " DB_HOST_ACCESS_CHOICE < /dev/tty
         DB_HOST_ACCESS_CHOICE=${DB_HOST_ACCESS_CHOICE:-localhost}
         if [[ "$DB_HOST_ACCESS_CHOICE" =~ ^%$ ]]; then
             DB_HOST_ACCESS="%"
@@ -316,7 +317,7 @@ if [[ "$INSTALL_MARIADB" == "yes" ]]; then
         print_success "Usuário MariaDB '$USERNAME'@'$DB_HOST_ACCESS' criado."
 
         CREATE_DB_MARIADB="no"
-        read -p "Deseja criar um BANCO DE DADOS MariaDB '$DJANGO_PROJECT_NAME' para '$USERNAME'? (s/n) [s]: " CREATE_DB_MARIADB_CHOICE
+        read -p "Deseja criar um BANCO DE DADOS MariaDB '$DJANGO_PROJECT_NAME' para '$USERNAME'? (s/n) [s]: " CREATE_DB_MARIADB_CHOICE < /dev/tty
         CREATE_DB_MARIADB_CHOICE=${CREATE_DB_MARIADB_CHOICE:-s}
         if [[ "$CREATE_DB_MARIADB_CHOICE" =~ ^[Ss]$ ]]; then
             CREATE_DB_MARIADB="yes"
